@@ -213,15 +213,6 @@ app.post("/products/create", myValidator(dto.createProductBodySchema, "json"), a
   return c.json(httpResponse.success(result ?? null, responseMessage.created), 201);
 });
 
-app.post("/products/create-otomax", myValidator(dto.createProductBodySchema, "json"), async (c) => {
-  const body = c.get("json");
-  const [result] = await db.insert(schema.products).values(body).returning({
-    code: schema.products.code,
-  });
-
-  return c.json(httpResponse.success(result ?? null, responseMessage.created), 201);
-});
-
 app.get("/products/find", myValidator(dto.findProductQuerySchema, "query"), async (c) => {
   const query = c.get("query");
   const conditions: (SQL | undefined)[] = [];
@@ -411,6 +402,7 @@ app.post(
   myValidator(dto.createProductSupplierBodySchema, "json"),
   async (c) => {
     const body = c.get("json");
+
     const [result] = await db.insert(schema.productSuppliers).values(body).returning({
       productCode: schema.productSuppliers.productCode,
       supplierCode: schema.productSuppliers.supplierCode,
@@ -418,30 +410,6 @@ app.post(
     });
 
     return c.json(httpResponse.success(result ?? null, responseMessage.created), 201);
-  },
-);
-
-app.post(
-  "/product-suppliers/create-otomax",
-  myValidator(dto.createProductSupplierBodySchema, "json"),
-  async (c) => {
-    const getProductCode = (input: string) =>
-      input.match(/(?:^|&)(?:kodeproduk|product)=([^&]*)/i)?.[1] || input;
-
-    const body = c.get("json");
-    const [result] = await db
-      .insert(schema.productSuppliers)
-      .values({
-        ...body,
-        supplierProductCode: getProductCode(body.supplierProductCode),
-      })
-      .returning({
-        productCode: schema.productSuppliers.productCode,
-        supplierCode: schema.productSuppliers.supplierCode,
-        supplierProductCode: schema.productSuppliers.supplierProductCode,
-      });
-
-    return c.json(httpResponse.success(result, responseMessage.created), 201);
   },
 );
 
@@ -505,6 +473,7 @@ app.post(
   async (c) => {
     const param = c.req.param();
     const body = c.get("json");
+
     const [result] = await db
       .update(schema.productSuppliers)
       .set(body)
@@ -584,6 +553,7 @@ app.post("/sync", async (c) => {
       supplierCode: schema.productSuppliers.supplierCode,
       supplierProductCode: schema.productSuppliers.supplierProductCode,
       price: schema.productSuppliers.price,
+      status: schema.productSuppliers.status,
     })
     .from(schema.productSuppliers)
     .orderBy(asc(schema.productSuppliers.updatedAt))
@@ -617,7 +587,7 @@ app.post("/sync", async (c) => {
               );
           }
         } else {
-          if (productSupplier.price !== 0) {
+          if (productSupplier.status !== "not-found") {
             await db
               .update(schema.productSuppliers)
               .set({

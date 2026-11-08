@@ -6,9 +6,9 @@ const BUSINESS_CODE = v.pipe(
   v.maxLength(16),
   v.regex(/^[A-Z][A-Z0-9_]*$/, "Invalid code"),
 );
-const EXTERNAL_CODE = v.pipe(v.string(), v.minLength(1), v.maxLength(500));
+const EXTERNAL_CODE = v.pipe(v.string(), v.minLength(1), v.maxLength(32));
 const NAME = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
-const TARGET_URL = v.pipe(v.string(), v.minLength(3), v.maxLength(500));
+const TARGET_URL = v.pipe(v.string(), v.minLength(3), v.maxLength(300));
 const QUICK_SEARCH = v.pipe(v.string(), v.maxLength(16));
 const BASIC_SEARCH = v.pipe(v.string(), v.maxLength(32));
 
