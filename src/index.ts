@@ -414,6 +414,7 @@ app.post(
     const [result] = await db.insert(schema.productSuppliers).values(body).returning({
       productCode: schema.productSuppliers.productCode,
       supplierCode: schema.productSuppliers.supplierCode,
+      supplierProductCode: schema.productSuppliers.supplierProductCode,
     });
 
     return c.json(httpResponse.success(result ?? null, responseMessage.created), 201);
